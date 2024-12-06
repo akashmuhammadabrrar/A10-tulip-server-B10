@@ -22,10 +22,15 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    // create the data cluster
+    const campaignCollection = client.db("campaignDB").collection("campaign");
 
+    // create an api (first)
     app.post("/campaigns", async (req, res) => {
       const newCampaign = req.body;
       console.log(newCampaign);
+      const result = await campaignCollection.insertOne(newCampaign);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
