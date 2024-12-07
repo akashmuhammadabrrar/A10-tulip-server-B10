@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,11 +24,47 @@ async function run() {
     await client.connect();
     // create the data cluster
     const campaignCollection = client.db("campaignDB").collection("campaign");
+    const donateUserCollection = client
+      .db("campaignDB")
+      .collection("userDonation");
+    //  read for single one
+    app.get("/details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await campaignCollection.findOne(query);
+      res.send(result);
+    });
+    app.post("/myDonate", async (req, res) => {
+      try {
+        const donate = req.body;
+        const result = await donateUserCollection.insertOne(donate);
+        res.send(result);
+      } catch (error) {
+        console.log(error, "error donate user");
+      }
+    });
+    // Read data for showing on client side
+    app.get("/campaigns", async (req, res) => {
+      const cursor = campaignCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    // donation
+    app.get("/myDonate/:email", async (req, res) => {
+      const query = donateUserCollection.find({ email: req.params.email });
+      const result = await query.toArray();
+      res.send(result);
+    });
+
+    app.get("/runningCampaign", async (req, res) => {
+      const cursor = campaignCollection.find().limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     // create an api (first)
     app.post("/campaigns", async (req, res) => {
       const newCampaign = req.body;
-      console.log(newCampaign);
       const result = await campaignCollection.insertOne(newCampaign);
       res.send(result);
     });
