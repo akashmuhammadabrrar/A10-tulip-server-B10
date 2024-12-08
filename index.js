@@ -49,6 +49,13 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    // delete user campaign
+    app.delete("/campaigns/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await campaignCollection.deleteOne(query);
+      res.send(result);
+    });
     // donation user by email
     app.get("/myDonate/:email", async (req, res) => {
       const query = donateUserCollection.find({ email: req.params.email });
@@ -56,11 +63,7 @@ async function run() {
       res.send(result);
     });
     // running campaign for 6 items
-    app.get("/runningCampaign", async (req, res) => {
-      const cursor = campaignCollection.find().limit(6);
-      const result = await cursor.toArray();
-      res.send(result);
-    });
+
     // update campaign
     app.put("/campaigns/:id", async (req, res) => {
       const id = req.params.id;
